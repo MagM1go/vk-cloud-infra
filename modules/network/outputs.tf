@@ -16,5 +16,5 @@ output "external_network_name" {
 }
 
 data "vkcs_networking_network" "external" {
-  network_id = var.external_network_id
+  id = var.external_network_id
 }
