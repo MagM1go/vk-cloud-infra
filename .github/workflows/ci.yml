@@ -13,7 +13,10 @@ jobs:
     runs-on:  ubuntu-latest
     timeout-minutes: 15
 
-    env:
+    env: &tfenv
+      AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION:    ${{ vars.AWS_DEFAULT_REGION }}
       TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
       TF_VAR_username:    ${{ secrets.TF_VAR_USERNAME }}
       TF_VAR_cloud_password: ${{ secrets.TF_VAR_CLOUD_PASSWORD }}
@@ -28,6 +31,8 @@ jobs:
 
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.5
 
       - name: Start terraform format check
         run: terraform fmt -check -recursive
@@ -37,3 +42,64 @@ jobs:
 
       - name: Start terraform validate
         run: terraform validate
+
+  plan:
+    needs: validation
+    environment: iac
+    name: Construct terraform plan
+    runs-on:  ubuntu-latest
+    timeout-minutes: 15
+
+    env: *tfenv
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.5
+
+      - name: Start terraform init (without S3 backend)
+        run: terraform init
+
+      - name: Start terraform plan
+        run: terraform plan -out=tfplan
+
+      - uses: actions/upload-artifact@v4
+        with:
+           name: tfplan
+           path: tfplan
+           retention-days: 7
+
+  apply:
+    needs: plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: iac-apply
+    name: Apply terraform file
+    runs-on:  ubuntu-latest
+    timeout-minutes: 15
+
+    env: *tfenv
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.5
+
+      - name: Download tfplan file
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+
+      - name: Start terraform init
+        run: terraform init
+
+      - name: Start terraform apply
+        run: terraform apply -auto-approve tfplan
+      
