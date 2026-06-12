@@ -36,9 +36,8 @@ build {
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
-      "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nginx php-fpm",
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nginx",
       "sudo systemctl enable nginx",
-      "sudo systemctl enable php8.3-fpm || sudo systemctl enable php-fpm || true",
       "sudo apt-get clean",
       "sudo rm -rf /var/lib/apt/lists/*",
     ]
