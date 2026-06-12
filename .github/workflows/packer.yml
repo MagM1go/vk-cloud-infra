@@ -1,0 +1,21 @@
+name: Packer Build Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: iac
+    env:
+      OS_AUTH_URL:         https://msk.cloud.vk.com/infra/identity/v3/
+      OS_USER_DOMAIN_NAME: users
+      OS_REGION_NAME:      RegionOne
+      OS_USERNAME:         ${{ secrets.TF_VAR_USERNAME }}
+      OS_PASSWORD:         ${{ secrets.TF_VAR_CLOUD_PASSWORD }}
+      OS_PROJECT_ID:       ${{ secrets.TF_VAR_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-packer@main
+      - run: packer init images/
+      - run: packer build images/
