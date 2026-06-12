@@ -101,5 +101,5 @@ jobs:
         run: terraform init
 
       - name: Start terraform apply
-        run: terraform apply -auto-approve tfplan -var-file=envs/public.auto.tfvars
+        run: terraform apply -auto-approve -var-file=envs/public.auto.tfvars tfplan
       

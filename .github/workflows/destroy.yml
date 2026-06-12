@@ -48,5 +48,5 @@ jobs:
           retention-days: 7
 
     - name: Start terraform apply
-      run: terraform apply -auto-approve tfdestroy -var-file=envs/public.auto.tfvars
+      run: terraform apply -auto-approve -var-file=envs/public.auto.tfvars tfdestroy
     
