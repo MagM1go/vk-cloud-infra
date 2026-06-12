@@ -43,3 +43,12 @@ module "compute" {
   tg_bot_token = var.tg_bot_token
   tg_chat_id   = var.tg_chat_id
 }
+
+module "k8s" {
+  source = "./modules/k8s"
+
+  project_name        = var.project_name
+  network_id          = module.network.network_id
+  subnet_id           = module.network.private_subnet_id
+  external_network_id = var.external_network_id
+}
