@@ -1,0 +1,177 @@
+#cloud-config
+package_update: true
+packages:
+  - curl
+  - wget
+  - tar
+  - gnupg
+  - apt-transport-https
+  - software-properties-common
+
+write_files:
+  - path: /etc/prometheus/prometheus.yml
+    permissions: "0644"
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+
+      alerting:
+        alertmanagers:
+          - static_configs:
+              - targets: ["localhost:9093"]
+
+      rule_files:
+        - /etc/prometheus/rules/*.yml
+
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets: ["localhost:9090"]
+
+        - job_name: node
+          static_configs:
+            - targets: ${jsonencode(node_targets)}
+
+  - path: /etc/prometheus/rules/alerts.yml
+    permissions: "0644"
+    content: |
+      groups:
+        - name: instance.rules
+          rules:
+            - alert: InstanceDown
+              expr: up{job="node"} == 0
+              for: 5m
+              labels: { severity: critical }
+              annotations:
+                summary: "Instance {{ $labels.instance }} down"
+
+            - alert: HighCPUUsage
+              expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+              for: 10m
+              labels: { severity: warning }
+              annotations:
+                summary: "High CPU on {{ $labels.instance }}"
+
+            - alert: HighMemoryUsage
+              expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+              for: 10m
+              labels: { severity: warning }
+              annotations:
+                summary: "High memory on {{ $labels.instance }}"
+
+            - alert: DiskSpaceLow
+              expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 90
+              for: 5m
+              labels: { severity: critical }
+              annotations:
+                summary: "Disk > 90% used on {{ $labels.instance }}"
+
+  - path: /etc/alertmanager/alertmanager.yml
+    permissions: "0644"
+    content: |
+      route:
+        receiver: telegram
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 3h
+
+      receivers:
+        - name: telegram
+          telegram_configs:
+            - bot_token: "${tg_bot_token}"
+              chat_id: ${tg_chat_id == "" ? "0" : tg_chat_id}
+              api_url: "https://api.telegram.org"
+              parse_mode: HTML
+              send_resolved: true
+
+  - path: /etc/systemd/system/prometheus.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Prometheus
+      After=network.target
+
+      [Service]
+      User=prometheus
+      Group=prometheus
+      Type=simple
+      ExecStart=/opt/prometheus/prometheus \
+        --config.file=/etc/prometheus/prometheus.yml \
+        --storage.tsdb.path=/var/lib/prometheus \
+        --web.listen-address=0.0.0.0:9090
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/systemd/system/alertmanager.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Alertmanager
+      After=network.target
+
+      [Service]
+      User=alertmanager
+      Group=alertmanager
+      Type=simple
+      ExecStart=/opt/alertmanager/alertmanager \
+        --config.file=/etc/alertmanager/alertmanager.yml \
+        --storage.path=/var/lib/alertmanager \
+        --web.listen-address=0.0.0.0:9093
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/systemd/system/node_exporter.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Node Exporter
+      After=network.target
+
+      [Service]
+      User=node_exporter
+      Group=node_exporter
+      Type=simple
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - useradd --no-create-home --shell /bin/false prometheus || true
+  - useradd --no-create-home --shell /bin/false alertmanager || true
+  - useradd --no-create-home --shell /bin/false node_exporter || true
+  - mkdir -p /opt/prometheus /opt/alertmanager /var/lib/prometheus /var/lib/alertmanager
+  - chown prometheus:prometheus /var/lib/prometheus /etc/prometheus -R
+  - chown alertmanager:alertmanager /var/lib/alertmanager /etc/alertmanager -R
+
+  - curl -L -o /tmp/prom.tgz https://github.com/prometheus/prometheus/releases/download/v2.48.0/prometheus-2.48.0.linux-amd64.tar.gz
+  - tar xzf /tmp/prom.tgz -C /tmp/
+  - cp /tmp/prometheus-2.48.0.linux-amd64/prometheus /opt/prometheus/
+  - cp /tmp/prometheus-2.48.0.linux-amd64/promtool   /opt/prometheus/
+  - chown prometheus:prometheus /opt/prometheus -R
+
+  - curl -L -o /tmp/am.tgz https://github.com/prometheus/alertmanager/releases/download/v0.26.0/alertmanager-0.26.0.linux-amd64.tar.gz
+  - tar xzf /tmp/am.tgz -C /tmp/
+  - cp /tmp/alertmanager-0.26.0.linux-amd64/alertmanager /opt/alertmanager/
+  - cp /tmp/alertmanager-0.26.0.linux-amd64/amtool       /opt/alertmanager/
+  - chown alertmanager:alertmanager /opt/alertmanager -R
+
+  - curl -L -o /tmp/ne.tgz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+  - tar xzf /tmp/ne.tgz -C /tmp/
+  - cp /tmp/node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
+  - chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+  - mkdir -p /etc/apt/keyrings
+  - curl -fsSL https://apt.grafana.com/gpg.key | gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
+  - echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" > /etc/apt/sources.list.d/grafana.list
+  - apt-get update
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y grafana
+
+  - systemctl daemon-reload
+  - systemctl enable --now node_exporter
+  - systemctl enable --now prometheus
+  - systemctl enable --now alertmanager
+  - systemctl enable --now grafana-server
