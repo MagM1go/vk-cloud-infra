@@ -9,6 +9,8 @@ override.tf.json
 *_override.tf.json
 .terraform.tfstate.lock.info
 
-scripts/secrets.fish
-envs/dev.tfvars
+scripts/*
+*.secret.auto.tfvars
 .env
+tfplan
+theme56.zip
