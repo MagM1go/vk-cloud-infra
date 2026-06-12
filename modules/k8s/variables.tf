@@ -26,10 +26,10 @@ variable "k8s_version" {
 
 variable "master_flavor" {
   type    = string
-  default = "STD3-1-2"
+  default = "STD3-2-6"
 }
 
 variable "worker_flavor" {
   type    = string
-  default = "STD3-1-2"
+  default = "STD3-2-6"
 }
