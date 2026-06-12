@@ -43,7 +43,7 @@ variable "keypair_name" {
 }
 
 variable "my_ip" {
-  type    = string
+  type = string
 }
 
 variable "web_flavor" {
