@@ -18,7 +18,7 @@ source "vkcs" "ubuntu" {
   source_image_name = "ubuntu-24-202602051634.gite7a38aaf"
   ssh_username = "ubuntu"
 
-  networks = ["8bedcd7e-4d2e-4b39-8b71-3848205480ce"]
+  networks = ["e981a0ba-75f9-41eb-9242-e646b120fd11"]
 
   security_groups = ["default", "ssh+www"]
 
