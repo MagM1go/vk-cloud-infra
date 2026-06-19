@@ -11,6 +11,8 @@ override.tf.json
 
 scripts/*
 *.secret.auto.tfvars
+envs/secret.tfvars
+envs/*.secret.tfvars
 .env
 tfplan
 theme56.zip

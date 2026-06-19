@@ -92,12 +92,15 @@ source your-openrc-file.sh
 terraform init
 terraform validate
 
+# заполняем секреты для локального запуска
+cp envs/secret.tfvars.example envs/secret.tfvars
+
 # dev
-terraform plan -out=tfplan -var-file=envs/dev.secret.auto.tfvars
+terraform plan  -out=tfplan -var-file=envs/dev.tfvars  -var-file=envs/secret.tfvars
 terraform apply tfplan
 
 # prod
-terraform plan -out=tfplan -var-file=envs/prod.secret.auto.tfvars
+terraform plan  -out=tfplan -var-file=envs/prod.tfvars -var-file=envs/secret.tfvars
 terraform apply tfplan
 ```
 
