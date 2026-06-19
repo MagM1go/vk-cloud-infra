@@ -38,7 +38,7 @@ jobs:
       run: terraform init
 
     - name: Start terraform plan to destroy
-      run: terraform plan -destroy -out=tfdestroy -var-file=envs/public.auto.tfvars
+      run: terraform plan -destroy -out=tfdestroy -var-file=envs/prod.secret.auto.example.tfvars
 
     - name: Upload tfdestroy plan
       uses: actions/upload-artifact@v4
@@ -48,5 +48,5 @@ jobs:
           retention-days: 7
 
     - name: Start terraform apply
-      run: terraform apply -auto-approve -var-file=envs/public.auto.tfvars tfdestroy
+      run: terraform apply -auto-approve -var-file=envs/prod.secret.auto.example.tfvars tfdestroy
     

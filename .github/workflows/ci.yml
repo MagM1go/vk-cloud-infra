@@ -65,7 +65,7 @@ jobs:
         run: terraform init
 
       - name: Start terraform plan
-        run: terraform plan -out=tfplan -var-file=envs/public.auto.tfvars
+        run: terraform plan -out=tfplan -var-file=envs/prod.secret.auto.example.tfvars
 
       - uses: actions/upload-artifact@v4
         with:
@@ -101,5 +101,5 @@ jobs:
         run: terraform init
 
       - name: Start terraform apply
-        run: terraform apply -auto-approve -var-file=envs/public.auto.tfvars tfplan
+        run: terraform apply -auto-approve -var-file=envs/prod.secret.auto.example.tfvars tfplan
       
