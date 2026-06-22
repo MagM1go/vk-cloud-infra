@@ -14,6 +14,7 @@ resource "vkcs_db_instance" "postgres" {
   network {
     uuid            = var.network_id
     security_groups = [var.db_sg_id]
+    subnet_id       = var.private_subnet_id
   }
 
   root_enabled  = true

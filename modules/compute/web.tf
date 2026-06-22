@@ -9,7 +9,6 @@ resource "vkcs_compute_instance" "web" {
   flavor_id         = data.vkcs_compute_flavor.web.id
   key_pair          = var.keypair_name
   availability_zone = var.availability_zone
-  security_groups   = [var.web_sg_name]
 
   block_device {
     uuid                  = data.vkcs_images_image.golden.id
@@ -23,9 +22,21 @@ resource "vkcs_compute_instance" "web" {
 
   network {
     uuid = var.network_id
+    port = vkcs_networking_port.web[each.key].id
   }
 
   user_data = templatefile("${path.module}/files/cloud-init/web.yaml", {
     hostname = "${var.project_name}-web-${each.key}"
   })
+}
+
+
+resource "vkcs_networking_port" "web" {
+  for_each           = local.web_nodes
+  network_id         = var.network_id
+  security_group_ids = [var.web_sg_id]
+
+  fixed_ip {
+    subnet_id = var.private_subnet_id
+  }
 }

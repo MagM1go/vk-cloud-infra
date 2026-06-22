@@ -27,7 +27,10 @@ module "compute" {
 
   # VM
   web_sg_name           = module.security.web_sg_name
+  web_sg_id             = module.security.web_sg_id
   bastion_sg_name       = module.security.bastion_sg_name
+  bastion_sg_id         = module.security.bastion_sg_id
+  monitoring_sg_id      = module.security.monitoring_sg_id
   monitoring_sg_name    = module.security.monitoring_sg_name
   lb_sg_id              = module.security.lb_sg_id
   public_subnet_id      = module.network.public_subnet_id

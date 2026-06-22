@@ -1,4 +1,5 @@
 variable "network_id" { type = string }
+variable "bastion_sg_id" { type = string }
 variable "db_sg_id" { type = string }
 variable "lb_sg_id" { type = string }
 variable "project_name" { type = string }
@@ -8,10 +9,11 @@ variable "db_password" {
   type      = string
   sensitive = true
 }
-
 variable "web_sg_name" { type = string }
+variable "web_sg_id" { type = string }
 variable "bastion_sg_name" { type = string }
 variable "monitoring_sg_name" { type = string }
+variable "monitoring_sg_id" { type = string }
 variable "public_subnet_id" { type = string }
 variable "private_subnet_id" { type = string }
 variable "external_network_name" { type = string }

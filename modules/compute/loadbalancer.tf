@@ -2,8 +2,12 @@ resource "vkcs_lb_loadbalancer" "app" {
   name          = "${var.project_name}-lb"
   vip_subnet_id = var.public_subnet_id
   tags          = ["lab56"]
+}
 
+resource "vkcs_networking_port_secgroup_associate" "lb_vip" {
+  port_id            = vkcs_lb_loadbalancer.app.vip_port_id
   security_group_ids = [var.lb_sg_id]
+  enforce            = true
 }
 
 resource "vkcs_lb_listener" "http" {
