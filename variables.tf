@@ -58,7 +58,7 @@ variable "bastion_flavor" {
 
 variable "monitoring_flavor" {
   type    = string
-  default = "STD3-2-4"
+  default = "STD3-1-2"
 }
 
 variable "db_flavor_id" {
