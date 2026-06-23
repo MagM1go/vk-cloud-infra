@@ -164,14 +164,14 @@ runcmd:
   - cp /tmp/node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
   - chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
-  - mkdir -p /etc/apt/keyrings
-  - curl -fsSL https://apt.grafana.com/gpg.key | gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
-  - echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" > /etc/apt/sources.list.d/grafana.list
-  - apt-get update
-  - DEBIAN_FRONTEND=noninteractive apt-get install -y grafana
-
   - systemctl daemon-reload
   - systemctl enable --now node_exporter
   - systemctl enable --now prometheus
   - systemctl enable --now alertmanager
-  - systemctl enable --now grafana-server
+
+  - mkdir -p /etc/apt/keyrings
+  - timeout 60 curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/grafana/gpg.key | gpg --dearmor -o /etc/apt/keyrings/grafana.gpg || true
+  - echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ stable main" > /etc/apt/sources.list.d/grafana.list
+  - timeout 120 apt-get update || true
+  - DEBIAN_FRONTEND=noninteractive timeout 300 apt-get install -y grafana || true
+  - systemctl enable --now grafana-server || true
