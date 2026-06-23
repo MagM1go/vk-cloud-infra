@@ -138,21 +138,21 @@ runcmd:
   - chown prometheus:prometheus /var/lib/prometheus /etc/prometheus -R
   - chown alertmanager:alertmanager /var/lib/alertmanager /etc/alertmanager -R
 
-  - curl -L -o /tmp/prom.tgz https://github.com/prometheus/prometheus/releases/download/v2.48.0/prometheus-2.48.0.linux-amd64.tar.gz
+  - curl -fL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 600 -o /tmp/prom.tgz https://github.com/prometheus/prometheus/releases/download/v3.12.0/prometheus-3.12.0.linux-amd64.tar.gz
   - tar xzf /tmp/prom.tgz -C /tmp/
-  - cp /tmp/prometheus-2.48.0.linux-amd64/prometheus /opt/prometheus/
-  - cp /tmp/prometheus-2.48.0.linux-amd64/promtool   /opt/prometheus/
+  - cp /tmp/prometheus-3.12.0.linux-amd64/prometheus /opt/prometheus/
+  - cp /tmp/prometheus-3.12.0.linux-amd64/promtool   /opt/prometheus/
   - chown prometheus:prometheus /opt/prometheus -R
 
-  - curl -L -o /tmp/am.tgz https://github.com/prometheus/alertmanager/releases/download/v0.26.0/alertmanager-0.26.0.linux-amd64.tar.gz
+  - curl -fL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 600 -o /tmp/am.tgz https://github.com/prometheus/alertmanager/releases/download/v0.33.0/alertmanager-0.33.0.linux-amd64.tar.gz
   - tar xzf /tmp/am.tgz -C /tmp/
-  - cp /tmp/alertmanager-0.26.0.linux-amd64/alertmanager /opt/alertmanager/
-  - cp /tmp/alertmanager-0.26.0.linux-amd64/amtool       /opt/alertmanager/
+  - cp /tmp/alertmanager-0.33.0.linux-amd64/alertmanager /opt/alertmanager/
+  - cp /tmp/alertmanager-0.33.0.linux-amd64/amtool       /opt/alertmanager/
   - chown alertmanager:alertmanager /opt/alertmanager -R
 
-  - curl -L -o /tmp/ne.tgz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+  - curl -fL --retry 6 --retry-delay 5 --retry-all-errors --connect-timeout 30 --max-time 600 -o /tmp/ne.tgz https://github.com/prometheus/node_exporter/releases/download/v1.11.1/node_exporter-1.11.1.linux-amd64.tar.gz
   - tar xzf /tmp/ne.tgz -C /tmp/
-  - cp /tmp/node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
+  - cp /tmp/node_exporter-1.11.1.linux-amd64/node_exporter /usr/local/bin/
   - chown node_exporter:node_exporter /usr/local/bin/node_exporter
 
   - systemctl daemon-reload
@@ -160,9 +160,7 @@ runcmd:
   - systemctl enable --now prometheus
   - systemctl enable --now alertmanager
 
-  - mkdir -p /etc/apt/keyrings
-  - timeout 60 curl -fsSL https://mirrors.tuna.tsinghua.edu.cn/grafana/gpg.key | gpg --dearmor -o /etc/apt/keyrings/grafana.gpg || true
-  - echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ stable main" > /etc/apt/sources.list.d/grafana.list
+  - echo "deb [trusted=yes] https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ stable main" > /etc/apt/sources.list.d/grafana.list
   - timeout 120 apt-get update || true
   - DEBIAN_FRONTEND=noninteractive timeout 300 apt-get install -y grafana || true
   - systemctl enable --now grafana-server || true
