@@ -1,13 +1,3 @@
-#cloud-config
-package_update: true
-packages:
-  - curl
-  - wget
-  - tar
-  - gnupg
-  - apt-transport-https
-  - software-properties-common
-
 write_files:
   - path: /etc/prometheus/prometheus.yml
     permissions: "0644"
