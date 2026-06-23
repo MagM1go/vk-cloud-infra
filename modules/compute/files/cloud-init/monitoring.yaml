@@ -130,6 +130,34 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
+  - path: /etc/grafana/provisioning/datasources/prometheus.yaml
+    permissions: "0644"
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          access: proxy
+          url: http://localhost:9090
+          isDefault: true
+          editable: false
+
+  - path: /etc/grafana/provisioning/dashboards/default.yaml
+    permissions: "0644"
+    content: |
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 60
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards
+
 runcmd:
   - useradd --no-create-home --shell /bin/false prometheus || true
   - useradd --no-create-home --shell /bin/false alertmanager || true
@@ -162,4 +190,8 @@ runcmd:
 
   - curl -fL --retry 3 --connect-timeout 30 --max-time 300 -o /tmp/grafana.deb https://hb.ru-msk.vkcloud-storage.ru/lab56eoooi/artifacts/grafana_11.3.0_amd64.deb
   - DEBIAN_FRONTEND=noninteractive dpkg -i /tmp/grafana.deb || DEBIAN_FRONTEND=noninteractive apt-get install -f -y || true
+
+  - mkdir -p /var/lib/grafana/dashboards
+  - curl -fL --retry 3 --connect-timeout 30 --max-time 300 -o /var/lib/grafana/dashboards/node-exporter-full.json https://hb.ru-msk.vkcloud-storage.ru/lab56eoooi/artifacts/node-exporter-full.json
+  - chown -R grafana:grafana /etc/grafana/provisioning /var/lib/grafana/dashboards
   - systemctl enable --now grafana-server || true
