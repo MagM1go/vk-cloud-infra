@@ -32,9 +32,10 @@ resource "vkcs_compute_instance" "web" {
 
 
 resource "vkcs_networking_port" "web" {
-  for_each           = local.web_nodes
-  network_id         = var.network_id
-  security_group_ids = [var.web_sg_id]
+  for_each                      = local.web_nodes
+  network_id                    = var.network_id
+  security_group_ids            = [var.web_sg_id]
+  full_security_groups_control  = true
 
   fixed_ip {
     subnet_id = var.private_subnet_id

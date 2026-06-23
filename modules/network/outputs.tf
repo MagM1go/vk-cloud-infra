@@ -3,11 +3,13 @@ output "network_id" {
 }
 
 output "public_subnet_id" {
-  value = vkcs_networking_subnet.public.id
+  value      = vkcs_networking_subnet.public.id
+  depends_on = [vkcs_networking_router_interface.public]
 }
 
 output "private_subnet_id" {
-  value = vkcs_networking_subnet.private.id
+  value      = vkcs_networking_subnet.private.id
+  depends_on = [vkcs_networking_router_interface.private]
 }
 
 # floating ip

@@ -32,8 +32,9 @@ resource "vkcs_compute_instance" "monitoring" {
 }
 
 resource "vkcs_networking_port" "monitoring" {
-  network_id         = var.network_id
-  security_group_ids = [var.monitoring_sg_id]
+  network_id                    = var.network_id
+  security_group_ids            = [var.monitoring_sg_id]
+  full_security_groups_control  = true
 
   fixed_ip {
     subnet_id = var.public_subnet_id

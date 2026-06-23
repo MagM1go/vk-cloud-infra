@@ -23,8 +23,9 @@ resource "vkcs_compute_instance" "bastion" {
 }
 
 resource "vkcs_networking_port" "bastion" {
-  network_id         = var.network_id
-  security_group_ids = [var.bastion_sg_id]
+  network_id                    = var.network_id
+  security_group_ids            = [var.bastion_sg_id]
+  full_security_groups_control  = true
 
   fixed_ip {
     subnet_id = var.public_subnet_id
